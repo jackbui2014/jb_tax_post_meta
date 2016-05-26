@@ -79,11 +79,9 @@ class JB_Metabox {
         $this->post_types = $args[ 'post_type' ];
         $this->context    = $args[ 'context' ];
         $this->priority   = $args[ 'priority' ];
-
         add_action( 'load-post.php', array( $this, 'pre_register' ) );
         add_action( 'load-post-new.php', array( $this, 'pre_register' ) );
     }
-
     /**
      * Pre register the metabox.
      *
@@ -105,14 +103,12 @@ class JB_Metabox {
 
         add_action( 'add_meta_boxes', array( $this, 'register' ) );
         add_action( 'save_post', array( $this, '_save_post' ), 10, 2 );
-
         foreach ( $this->actions as $action ) {
             if ( method_exists( $this, $action ) ) {
                 add_action( $action, array( $this, $action ) );
             }
         }
     }
-
     /**
      * Additional checks before registering the metabox.
      *
@@ -130,7 +126,6 @@ class JB_Metabox {
     final public function register() {
         add_meta_box( $this->id, $this->title, array( $this, 'display' ), NULL, $this->context, $this->priority );
     }
-
     /**
      * Filter data before display.
      *
@@ -142,7 +137,6 @@ class JB_Metabox {
     public function before_display( $form_data, $post ) {
         return $form_data;
     }
-
     /**
      * Displays metabox content.
      *
@@ -181,7 +175,6 @@ class JB_Metabox {
 
         delete_post_meta( $post->ID, '_error_data_' . $this->id );
     }
-
     /**
      * Returns table.
      *
@@ -201,7 +194,6 @@ class JB_Metabox {
 
         return $output;
     }
-
     /**
      * Returns table row.
      *
@@ -213,7 +205,6 @@ class JB_Metabox {
      */
     public function table_row( $row, $formdata, $errors = array() ) {
         $input = JB_Forms::input( $row, $formdata );
-
         // If row has an error, highlight it
         $style = ( in_array( $row[ 'name' ], $errors ) ) ? 'style="background-color: #FFCCCC"' : '';
 

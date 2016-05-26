@@ -9,13 +9,13 @@ class AE_Forms {
 	/**
 	 * Generates form field.
 	 *
-	 * @param array|AE_FormField_I $args
+	 * @param array|JB_FormField_I $args
 	 * @param mixed                $value
 	 *
 	 * @return string
 	 */
 	public static function input_with_value( $args, $value ) {
-		$field = AE_FormField::create( $args );
+		$field = JB_FormField::create( $args );
 
 		return $field->render( $value );
 	}
@@ -23,15 +23,15 @@ class AE_Forms {
 	/**
 	 * Generates form field.
 	 *
-	 * @param array|AE_FormField_I $args
+	 * @param array|JB_FormField_I $args
 	 * @param array                $formdata (optional)
 	 *
 	 * @return string
 	 */
 	public static function input( $args, $formdata = null ) {
-		$field = AE_FormField::create( $args );
+		$field = JB_FormField::create( $args );
 
-		return $field->render( AE_Forms::get_value( $args['name'], $formdata ) );
+		return $field->render( JB_Forms::get_value( $args['name'], $formdata ) );
 	}
 
 	/**
@@ -210,7 +210,7 @@ class AE_Forms {
 	/**
 	 * Given a list of fields, validate some data.
 	 *
-	 * @param array $fields    List of args that would be sent to AE_Forms::input()
+	 * @param array $fields    List of args that would be sent to JB_Forms::input()
 	 * @param array $data      (optional) The data to validate. Defaults to $_POST
 	 * @param array $to_update (optional) Existing data to populate. Necessary for nested values
 	 *
@@ -222,9 +222,9 @@ class AE_Forms {
 		}
 
 		foreach ( $fields as $field ) {
-			$value = AE_Forms::get_value( $field['name'], $data );
+			$value = JB_Forms::get_value( $field['name'], $data );
 
-			$fieldObj = AE_FormField::create( $field );
+			$fieldObj = JB_FormField::create( $field );
 
 			$value = $fieldObj->validate( $value );
 
@@ -326,9 +326,9 @@ class AE_Forms {
 
 
 /**
- * A wrapper for AE_Forms, containing the formdata.
+ * A wrapper for JB_Forms, containing the formdata.
  */
-class AE_Form {
+class JB_Form {
 	protected $data   = array();
 	protected $prefix = array();
 
@@ -355,14 +355,14 @@ class AE_Form {
 	 *
 	 * @param string $path
 	 *
-	 * @return object A AE_Form
+	 * @return object A JB_Form
 	 */
 	public function traverse_to( $path ) {
-		$data = AE_Forms::get_value( $path, $this->data );
+		$data = JB_Forms::get_value( $path, $this->data );
 
 		$prefix = array_merge( $this->prefix, (array) $path );
 
-		return new AE_Form( $data, $prefix );
+		return new JB_Form( $data, $prefix );
 	}
 
 	/**
@@ -373,20 +373,20 @@ class AE_Form {
 	 * @return string
 	 */
 	public function input( $args ) {
-		$value = AE_Forms::get_value( $args['name'], $this->data );
+		$value = JB_Forms::get_value( $args['name'], $this->data );
 
 		if ( ! empty( $this->prefix ) ) {
 			$args['name'] = array_merge( $this->prefix, (array) $args['name'] );
 		}
 
-		return AE_Forms::input_with_value( $args, $value );
+		return JB_Forms::input_with_value( $args, $value );
 	}
 }
 
 /**
  * Interface for form fields.
  */
-interface AE_FormField_I {
+interface JB_FormField_I {
 
 	/**
 	 * Generate the corresponding HTML for a field.
@@ -410,19 +410,19 @@ interface AE_FormField_I {
 /**
  * Base class for form fields implementations.
  */
-abstract class AE_FormField implements AE_FormField_I {
+abstract class JB_FormField implements JB_FormField_I {
 
 	protected $args;
 
 	/**
 	 * Creates form field.
 	 *
-	 * @param array|AE_FormField_I $args
+	 * @param array|JB_FormField_I $args
 	 *
 	 * @return mixed false on failure or instance of form class
 	 */
 	public static function create( $args ) {
-		if ( is_a( $args, 'AE_FormField_I' ) ) {
+		if ( is_a( $args, 'JB_FormField_I' ) ) {
 			return $args;
 		}
 
@@ -447,8 +447,8 @@ abstract class AE_FormField implements AE_FormField_I {
 		$args = wp_parse_args( $args, array(
 			'desc'      => '',
 			'desc_pos'  => 'after',
-			'wrap'      => AE_Forms::TOKEN,
-			'wrap_each' => AE_Forms::TOKEN,
+			'wrap'      => JB_Forms::TOKEN,
+			'wrap_each' => JB_Forms::TOKEN,
 		) );
 
 		// depends on $args['desc']
@@ -458,21 +458,21 @@ abstract class AE_FormField implements AE_FormField_I {
 
 		switch ( $args['type'] ) {
 			case 'radio':
-				return new AE_RadiosField( $args );
+				return new JB_RadiosField( $args );
 			case 'select':
-				return new AE_SelectField( $args );
+				return new JB_SelectField( $args );
 			case 'checkbox':
 				if ( isset( $args['choices'] ) ) {
-					return new AE_MultipleChoiceField( $args );
+					return new JB_MultipleChoiceField( $args );
 				} else {
-					return new AE_SingleCheckboxField( $args );
+					return new JB_SingleCheckboxField( $args );
 				}
 			case 'html':
-				return new AE_HtmlField($args);
+				return new JB_HtmlField($args);
 			case 'custom':
-				return new AE_CustomField( $args );
+				return new JB_CustomField( $args );
 			default:
-				return new AE_TextField( $args );
+				return new JB_TextField( $args );
 		}
 	}
 
@@ -527,9 +527,9 @@ abstract class AE_FormField implements AE_FormField_I {
 			$this->_set_value( $args, $value );
 		}
 
-		$args['name'] = AE_Forms::get_name( $args['name'] );
+		$args['name'] = JB_Forms::get_name( $args['name'] );
 
-		return str_replace( AE_Forms::TOKEN, $this->_render( $args ), $this->wrap );
+		return str_replace( JB_Forms::TOKEN, $this->_render( $args ), $this->wrap );
 	}
 
 	/**
@@ -675,7 +675,7 @@ abstract class AE_FormField implements AE_FormField_I {
 /**
  * Text form field.
  */
-class AE_TextField extends AE_FormField {
+class JB_TextField extends JB_FormField {
 
 	/**
 	 * Sanitizes value.
@@ -708,7 +708,7 @@ class AE_TextField extends AE_FormField {
 			$args['extra']['id'] = $args['name'];
 		}
 
-		return AE_FormField::_input_gen( $args );
+		return JB_FormField::_input_gen( $args );
 	}
 
 	/**
@@ -727,7 +727,7 @@ class AE_TextField extends AE_FormField {
 /**
  * Base class for form fields with single choice.
  */
-abstract class AE_SingleChoiceField extends AE_FormField {
+abstract class JB_SingleChoiceField extends JB_FormField {
 
 	/**
 	 * Validates a value against a field.
@@ -790,7 +790,7 @@ abstract class AE_SingleChoiceField extends AE_FormField {
 /**
  * Dropdown field.
  */
-class AE_SelectField extends AE_SingleChoiceField {
+class JB_SelectField extends JB_SingleChoiceField {
 
 	/**
 	 * Generate the corresponding HTML for a field.
@@ -834,14 +834,14 @@ class AE_SelectField extends AE_SingleChoiceField {
 
 		$input = html( 'select', $args['extra'], $opts );
 
-		return AE_FormField::add_label( $input, $args['desc'], $args['desc_pos'] );
+		return JB_FormField::add_label( $input, $args['desc'], $args['desc_pos'] );
 	}
 }
 
 /**
  * Radio field.
  */
-class AE_RadiosField extends AE_SelectField {
+class JB_RadiosField extends JB_SelectField {
 
 	/**
 	 * Generate the corresponding HTML for a field.
@@ -861,7 +861,7 @@ class AE_RadiosField extends AE_SelectField {
 		foreach ( $args['choices'] as $value => $title ) {
 			$value = (string) $value;
 
-			$single_input = AE_FormField::_checkbox( array(
+			$single_input = JB_FormField::_checkbox( array(
 				'name'     => $args['name'],
 				'type'     => 'radio',
 				'value'    => $value,
@@ -870,17 +870,17 @@ class AE_RadiosField extends AE_SelectField {
 				'desc_pos' => 'after',
 			) );
 
-			$opts .= str_replace( AE_Forms::TOKEN, $single_input, $args['wrap_each'] );
+			$opts .= str_replace( JB_Forms::TOKEN, $single_input, $args['wrap_each'] );
 		}
 
-		return AE_FormField::add_desc( $opts, $args['desc'], $args['desc_pos'] );
+		return JB_FormField::add_desc( $opts, $args['desc'], $args['desc_pos'] );
 	}
 }
 
 /**
  * Checkbox field with multiple choices.
  */
-class AE_MultipleChoiceField extends AE_FormField {
+class JB_MultipleChoiceField extends JB_FormField {
 
 	/**
 	 * Validates a value against a field.
@@ -912,7 +912,7 @@ class AE_MultipleChoiceField extends AE_FormField {
 
 		$opts = '';
 		foreach ( $args['choices'] as $value => $title ) {
-			$single_input = AE_FormField::_checkbox( array(
+			$single_input = JB_FormField::_checkbox( array(
 				'name'     => $args['name'] . '[]',
 				'type'     => 'checkbox',
 				'value'    => $value,
@@ -921,10 +921,10 @@ class AE_MultipleChoiceField extends AE_FormField {
 				'desc_pos' => 'after',
 			) );
 
-			$opts .= str_replace( AE_Forms::TOKEN, $single_input, $args['wrap_each'] );
+			$opts .= str_replace( JB_Forms::TOKEN, $single_input, $args['wrap_each'] );
 		}
 
-		return AE_FormField::add_desc( $opts, $args['desc'], $args['desc_pos'] );
+		return JB_FormField::add_desc( $opts, $args['desc'], $args['desc_pos'] );
 	}
 
 	/**
@@ -943,7 +943,7 @@ class AE_MultipleChoiceField extends AE_FormField {
 /**
  * Checkbox field.
  */
-class AE_SingleCheckboxField extends AE_FormField {
+class JB_SingleCheckboxField extends JB_FormField {
 
 	/**
 	 * Validates a value against a field.
@@ -977,7 +977,7 @@ class AE_SingleCheckboxField extends AE_FormField {
 			$args['desc'] = str_replace( '[]', '', $args['value'] );
 		}
 
-		return AE_FormField::_input_gen( $args );
+		return JB_FormField::_input_gen( $args );
 	}
 
 	/**
@@ -996,7 +996,7 @@ class AE_SingleCheckboxField extends AE_FormField {
 /**
  * Wrapper field for custom callbacks.
  */
-class AE_CustomField implements AE_FormField_I {
+class JB_CustomField implements JB_FormField_I {
 
 	protected $args;
 
@@ -1061,7 +1061,7 @@ class AE_CustomField implements AE_FormField_I {
 /**
  * Text form field.
  */
-class AE_HtmlField extends AE_FormField {
+class JB_HtmlField extends JB_FormField {
 
 	/**
 	 * Sanitizes value.
